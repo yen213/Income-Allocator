@@ -1,5 +1,9 @@
 {
+  "description": "Income allocator for separating income into different categories by value or percentage",
+  "author": "Yen Maruf",
   "name": "income-allocator",
+  "main": "public/main.js",
+  "homepage": "./",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -10,17 +14,29 @@
     "@types/node": "^12.19.16",
     "@types/react": "^17.0.1",
     "@types/react-dom": "^17.0.0",
+    "big.js": "^6.0.3",
+    "chart.js": "^2.9.4",
+    "concurrently": "^5.3.0",
+    "cross-env": "^7.0.3",
+    "electron": "^11.2.3",
+    "electron-builder": "^22.9.1",
+    "electron-is-dev": "^1.2.0",
     "react": "^17.0.1",
+    "react-chartjs-2": "^2.11.1",
     "react-dom": "^17.0.1",
+    "react-number-format": "^4.4.4",
     "react-scripts": "4.0.2",
     "typescript": "^4.1.3",
+    "wait-on": "^5.2.1",
     "web-vitals": "^1.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "ebuild": "npm run build && node_modules/.bin/build",
+    "dev": "concurrently \"SET BROWSER=none && npm start\" \"wait-on http://localhost:3000 && electron .\""
   },
   "eslintConfig": {
     "extends": [
@@ -39,5 +55,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/big.js": "^6.0.2"
   }
 }
