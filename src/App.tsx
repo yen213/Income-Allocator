@@ -1,5 +1,5 @@
 import Big from "big.js";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import NumberFormat from "react-number-format";
 import { DataStructure, useData } from "./DataContext";
@@ -7,7 +7,9 @@ import { PaymentInformation } from "./PaymentInformation";
 
 export const App: React.FC = () => {
   const EQUAL_ZERO = "Income left must equal 0";
-  const EMPTY_INFO = "Enter some income and break down first";
+  const EMPTY_INFO = "Missing income and allocation information";
+  const EMPTY_INCOME = "Enter an income first";
+
   const [errorText, setErrorText] = useState(EQUAL_ZERO);
 
   // States
@@ -22,6 +24,7 @@ export const App: React.FC = () => {
     setInputList,
     total,
     setTotal,
+    totalPercentage,
     setTotalPercentage,
   } = useData();
 
@@ -61,7 +64,9 @@ export const App: React.FC = () => {
     },
     title: {
       display: true,
-      text: `Income Allocation of $${income}`,
+      text: `Income Allocation of $${income
+        .toFixed(2)
+        .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}`,
     },
     animation: {
       animateScale: true,
@@ -100,13 +105,19 @@ export const App: React.FC = () => {
       };
 
       for (let i = 0; i < inputList.length; i++) {
-        dataObj.labels[i] =
-          `${inputList[i].label || ""}: $${inputList[i].value}` || "";
-        dataObj.datasets[0].data[i] = inputList[i].value || 0;
-        dataObj.datasets[0].backgroundColor[i] =
-          backgroundColor[i] || backgroundColor[0];
-        dataObj.datasets[0].borderColor[i] =
-          borderColor[i] || backgroundColor[0];
+        if (inputList[i].value) {
+          dataObj.labels[i] = `${inputList[i].label || "none"}: $${
+            inputList[i].value
+              ?.toFixed(2)
+              .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") ||
+            Number(0).toFixed(2)
+          }`;
+          dataObj.datasets[0].data[i] = inputList[i].value || 0;
+          dataObj.datasets[0].backgroundColor[i] =
+            backgroundColor[i] || backgroundColor[0];
+          dataObj.datasets[0].borderColor[i] =
+            borderColor[i] || backgroundColor[0];
+        }
       }
 
       dataObj.datasets[0].borderWidth = 1;
@@ -123,14 +134,20 @@ export const App: React.FC = () => {
       setModifyIncome(false);
 
       return;
+    }
+
+    if (total !== 0 && total !== income) {
+      setErrorText(EQUAL_ZERO);
+    } else if (income === 0) {
+      console.log(income);
+      setErrorText(EMPTY_INCOME);
     } else if (!data) {
       setErrorText(EMPTY_INFO);
-    } else {
-      setErrorText(EQUAL_ZERO);
     }
 
     setShowError(true);
     console.log(total);
+    console.log(income);
   };
 
   // Resets
@@ -143,32 +160,157 @@ export const App: React.FC = () => {
     setModifyIncome(true);
   };
 
+  const ResetButton = () => {
+    return (
+      <button className="form-button reset-button" onClick={handleReset}>
+        Reset
+      </button>
+    );
+  };
+
+  useEffect(() => {
+    setInputList([{ label: undefined, value: 0, percentage: 0 }]);
+  }, [income, setInputList]);
+
   return (
     <div>
       {modifyIncome && (
         <div>
-          <label htmlFor="income">Income: </label>
-          <NumberFormat
-            value={income}
-            allowNegative={false}
-            displayType="input"
-            thousandSeparator={true}
-            decimalSeparator={"."}
-            placeholder="Amount"
-            decimalScale={2}
-            prefix={"$"}
-            onFocus={(e) => e.target.select()}
-            onValueChange={({ floatValue }) => setIncome(floatValue || 0)}
-          />
+          <h1 className="center title">Income Allocator</h1>
+          <div className="container-sm center income">
+            <div className="form-field">
+              <NumberFormat
+                className="input-text"
+                name="income"
+                required
+                autoComplete="off"
+                fixedDecimalScale={true}
+                value={income}
+                allowNegative={false}
+                displayType="input"
+                thousandSeparator={true}
+                decimalSeparator={"."}
+                decimalScale={2}
+                prefix={"$"}
+                onFocus={(e) => e.target.select()}
+                onValueChange={({ floatValue }) => setIncome(floatValue || 0)}
+              />
+              <label className="input-label" htmlFor="income">
+                Income
+              </label>
+            </div>
+          </div>
           <PaymentInformation />
-          {showError && <p style={{ color: "red" }}>{errorText}</p>}
-          <button onClick={handleSubmit}>Submit</button>
+          <div className="center col-sm-12">
+            {showError && (total !== 0 || !data) && (
+              <p className="error-text">{errorText}</p>
+            )}
+          </div>
+          <div className="row">
+            <div className="col-12 center" style={{ marginBottom: "-7.3rem" }}>
+              <NumberFormat
+                style={{
+                  color: income - total > income ? "red" : "green",
+                }}
+                className="income-left"
+                decimalScale={2}
+                decimalSeparator={"."}
+                value={income - total}
+                fixedDecimalScale={true}
+                prefix={"Currently Allocated: $"}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+              <NumberFormat
+                className="income-left"
+                style={{
+                  marginLeft: "1.2rem",
+                  color: 100 - totalPercentage > 100 ? "red" : "green",
+                }}
+                decimalScale={2}
+                decimalSeparator={"."}
+                value={100 - totalPercentage}
+                fixedDecimalScale={true}
+                prefix={" ("}
+                suffix={")%"}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            </div>
+            <div className="col-12 center">
+              <span
+                style={{
+                  color: total < 0 || totalPercentage < 0 ? "red" : "green",
+                  marginRight: "0.325rem",
+                }}
+                className="income-left"
+              >
+                Income Left:
+              </span>
+              <NumberFormat
+                className="income-left"
+                decimalScale={2}
+                decimalSeparator={"."}
+                style={{
+                  color: total < 0 || totalPercentage < 0 ? "red" : "green",
+                }}
+                isNumericString={true}
+                value={total}
+                fixedDecimalScale={true}
+                prefix={"$"}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+              <NumberFormat
+                className="income-left"
+                decimalScale={2}
+                decimalSeparator={"."}
+                style={{
+                  color: total < 0 || totalPercentage < 0 ? "red" : "green",
+                  marginLeft: "1.2rem",
+                }}
+                value={income === 0 ? 0 : totalPercentage}
+                fixedDecimalScale={true}
+                prefix={" ("}
+                suffix={")%"}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            </div>
+          </div>
+          <div className="reset-submit-button center row-sm-12">
+            <button
+              className="form-button submit-button"
+              onClick={handleSubmit}
+            >
+              Submit
+            </button>
+            <ResetButton />
+          </div>
+          <p className="note-message">
+            *Due to the rounding of decimal places for the calculations, Income
+            Left may sometimes be off by (+/-) 0.01-0.09 cents/percentage. In
+            this case, use the non-percentage value for Income Left and add it
+            to another income breakdown.*
+          </p>
         </div>
       )}
       {data != null && !modifyIncome && (
-        <Pie data={data} width={350} height={120} options={option} />
+        <div>
+          <div className="center row-sm-12">
+            <Pie data={data} width={550} height={320} options={option} />
+          </div>
+          <div className="reset-submit-button center row-sm-12">
+            <button
+              className="form-button submit-button"
+              onClick={() => setModifyIncome(true)}
+            >
+              Edit
+            </button>
+            <ResetButton />
+          </div>
+        </div>
       )}
-      <button onClick={handleReset}>Reset</button>
     </div>
   );
 };

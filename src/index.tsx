@@ -1,8 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
-import { DataProvider } from "./DataContext";
 import reportWebVitals from "./reportWebVitals";
+
+import { DataProvider } from "./DataContext";
+import App from "./App";
+
+import "./style.css";
 
 ReactDOM.render(
   <React.StrictMode>

@@ -31,6 +31,10 @@ type DataContextType = {
   setTotal: (val: number) => void;
   totalPercentage: number;
   setTotalPercentage: (val: number) => void;
+  errorText: String;
+  setErrorText: (val: String) => void;
+  showError: boolean;
+  setShowError: (val: boolean) => void;
 };
 
 // Define the props type
@@ -56,6 +60,7 @@ export const createDataContext = <DataContextType,>() => {
 
     return c;
   };
+
   return [useDataContext, context.Provider] as const;
 };
 
@@ -67,6 +72,12 @@ export { useData };
 
 // Data provider to provide the state and state function to children components
 export const DataProvider = ({ children }: Props) => {
+  const EQUAL_ZERO = "Income left must equal 0";
+  const EMPTY_INFO = "Missing income and allocation information";
+  const EMPTY_INCOME = "Enter an income first";
+
+  const [errorText, setErrorText] = useState<String>(EQUAL_ZERO);
+  const [showError, setShowError] = useState<boolean>(false);
   const [data, setData] = useState<DataStructure | null>();
   const [income, setIncome] = useState<number>(0);
   const [total, setTotal] = useState<number>(income);
@@ -88,6 +99,10 @@ export const DataProvider = ({ children }: Props) => {
         setTotal,
         totalPercentage,
         setTotalPercentage,
+        errorText,
+        setErrorText,
+        showError,
+        setShowError,
       }}
     >
       {children}
