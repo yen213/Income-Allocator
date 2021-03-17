@@ -1,5 +1,7 @@
 import { createContext, useContext, useState } from "react";
 
+import { EQUAL_ZERO } from "../constant/ErrorText";
+
 // Define the data structure for the Charts.js library
 export interface DataStructure {
   labels: string[];
@@ -72,10 +74,6 @@ export { useData };
 
 // Data provider to provide the state and state function to children components
 export const DataProvider = ({ children }: Props) => {
-  const EQUAL_ZERO = "Income left must equal 0";
-  const EMPTY_INFO = "Missing income and allocation information";
-  const EMPTY_INCOME = "Enter an income first";
-
   const [errorText, setErrorText] = useState<String>(EQUAL_ZERO);
   const [showError, setShowError] = useState<boolean>(false);
   const [data, setData] = useState<DataStructure | null>();
